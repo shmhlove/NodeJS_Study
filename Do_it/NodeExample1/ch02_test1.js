@@ -1,4 +1,4 @@
-// console의 time
+// < console : timer >
 
 var result = 0;
 

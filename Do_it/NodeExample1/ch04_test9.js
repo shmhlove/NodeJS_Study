@@ -1,3 +1,5 @@
+// < 파일 스트림 >
+
 console.log("==============================");
 
 var FileSystem = require("fs");

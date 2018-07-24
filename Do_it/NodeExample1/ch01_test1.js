@@ -1,3 +1,5 @@
+// < console : 기본 사용법 >
+
 console.log("안녕하세요!!");
 
 console.log("반가워요!!");

@@ -1,3 +1,5 @@
+// < 이벤트 >
+
 console.log("==============================");
 
 process.on('exit', function()

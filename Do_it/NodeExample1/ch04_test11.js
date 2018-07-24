@@ -1,3 +1,5 @@
+// < 간단 HTTP 서버 >
+
 console.log("==============================");
 
 var FileSystem = require("fs");

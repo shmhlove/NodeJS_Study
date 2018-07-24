@@ -1,3 +1,5 @@
+// < 스트림 연결(복사) >
+
 console.log("==============================");
 
 var FileSystem = require("fs");

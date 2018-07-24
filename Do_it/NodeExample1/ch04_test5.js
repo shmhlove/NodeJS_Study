@@ -1,3 +1,5 @@
+// < 파일 : 읽기(싱크, 어싱크) >
+
 console.log("==============================");
 
 var FileSystem = require("fs");

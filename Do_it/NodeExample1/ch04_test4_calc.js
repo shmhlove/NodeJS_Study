@@ -1,3 +1,5 @@
+// < 이벤트 : 사용자 정의 이벤트 모듈 >
+
 var util = require("util");
 var eventEmitter = require("events").EventEmitter;
 

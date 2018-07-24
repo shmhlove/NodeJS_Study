@@ -1,3 +1,5 @@
+// < 이벤트 : 이벤트 발생 >
+
 console.log("==============================");
 
 process.on('tick', function(count)
