@@ -1,4 +1,9 @@
-// < 웹 서버 만들기 1 >
+// < 웹 서버 만들기 1 : request의 여러가지 방식을 설명한다.>
+/*
+    - res.write를 활용하여 하드하게 응답하는 방법
+    - file.createReadSteam을 활용하여 파일 Steam과 res Stream 연결로 응답하는 방법
+    - file.readFile으로 파일을 직접 읽어 data를 write로 삽입하여 응답하는 방법
+*/
 
 var http = require("http");
 var server = http.createServer();
@@ -8,7 +13,7 @@ var server = http.createServer();
 
 var host = "127.0.0.1";
 //var host = "192.168.0.16";
-var backlog = "50000";
+var backlog = "50000"; // 동시 접속자 수
 var port = 3000;
 server.listen(port, host, backlog, function()
 {
@@ -22,7 +27,7 @@ server.listen(port, host, backlog, function()
 
 server.on("connection", function(socket)
 {
-    console.log("웹 서버 연결 이벤트가 도착했습니다.(port : %d)", port);
+    console.log("웹 서버에 클라이언트로 부터 연결 요청 이벤트가 도착했습니다.(port : %d)", port);
 });
 
 server.on("request", function(req, res)

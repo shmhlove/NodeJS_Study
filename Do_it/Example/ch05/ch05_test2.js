@@ -1,4 +1,4 @@
-// < 웹 서버 만들기 2 >
+// < 웹 서버 만들기 2 : request이벤트를 createServer와 동시에 정의할 수도 있다.>
 
 var http = require("http");
 var server = http.createServer(function(req, res)

@@ -1,4 +1,4 @@
-// < 웹 서버 만들기 3 >
+// < 웹 서버 만들기 3 : MIME Type을 바꾸면 문자외에도 이미지를 응답할 수도 있다.>
 
 var http = require("http");
 var server = http.createServer();
