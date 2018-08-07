@@ -1,20 +1,16 @@
 // < 웹 서버 만들기 : Express 외부 미들웨어 활용하기 >
 /*
-    라우터 미들웨어 : Express 요청이 들어왔을때 use 메소드가 호출될텐데 
-    URL별로 동작을 구분하려면 URL을 확인해서 분기처리해줘야한다. 
-    라우터 미들웨어를 사용하면 쉽게 분기할 수 있다.
-    -> 라우터 미들웨어는 Express에 기본 포함되어 있다.
+    에러처리 미들웨어
+    -> npm install express-error-handler
     
     * 테스트 *
-    GET 방식  : http://127.0.0.1:3000/process/login/?id=SangHo&password=3535
-    POST 방식 : http://127.0.0.1:3000/public/login_router.html
-    GET Token 방식  : http://127.0.0.1:3000/process/login/PostToken/?id=SangHo&password=3535
-    POST Token 방식 : http://127.0.0.1:3000/public/login_router_post_token.html
+    http://127.0.0.1:3000/login
 */
 
 var express = require("express");
 var expressStatic = require("serve-static");
 var expressBodyParser = require("body-parser");
+var expressErrorHandler = require("express-error-handler");
 
 var path = require("path");
 var http = require("http");
@@ -64,8 +60,8 @@ router.route("/process/login/:name").post(function(req, res)
     // POST 방식으로도 URL에 요청파라미터를 사용할 수 있다.
     // HTML : <form method="post" action="/process/login/PostToken">
     // Router URL : /process/login/:name
-    
-    ProcessResponse(res, req.params.name, req.body.password);
+    var paramName = req.params.name;
+    ProcessResponse(res, paramName, req.body.password);
 });
 
 router.route("/process/login").put(function(req, res)
@@ -80,15 +76,33 @@ router.route("/process/login").delete(function(req, res)
     ProcessResponse(res, req.body.id, req.body.password);
 });
 
+var fs = require("fs");
 router.route("*").all(function(req, res)
 {
     console.log("ALL(모든요청) 방식 요청");
-    res.status(404).send("<h1>ERROR - 페이지를 찾을 수 없습니다.</h1>");
+    
+    // 음... 이렇게 해도 되는데 error-handler를 쓰는구나.. 뭔가 이유가 있겠지??
+    fs.readFile("./Example/ch05/public/404.html", "utf8", function(err, data)
+    {
+        res.status(404).send(data);
+    });
 });
 
 // Express 객체에 라우터 등록
 expressApp.use("/", router);
 expressApp.set("port", process.env.PORT ? process.env.PORT : 3000);
+
+// Express 객체에 에러 핸들러 등록
+var errorHandler = expressErrorHandler(
+    {
+        static: 
+        {
+            "404": "./Example/ch05/public/404.html"
+        }
+    }
+);
+expressApp.use(expressErrorHandler.httpError(404));
+expressApp.use(errorHandler);
 
 http.createServer(expressApp).listen(expressApp.get("port"), function()
 {
