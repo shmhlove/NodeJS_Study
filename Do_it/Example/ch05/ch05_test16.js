@@ -1,7 +1,7 @@
 // < 웹 서버 만들기 : Express 외부 미들웨어 활용하기 >
 /*
     에러처리 미들웨어
-    -> npm install express-error-handler
+    -> npm install express-error-handler --save
     
     * 테스트 *
     http://127.0.0.1:3000/login

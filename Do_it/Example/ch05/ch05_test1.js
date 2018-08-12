@@ -12,9 +12,9 @@ var server = http.createServer();
 //server.listen(port, function()
 
 var host = "127.0.0.1";
-//var host = "192.168.0.16";
 var backlog = "50000"; // 동시 접속자 수
 var port = 3000;
+
 server.listen(port, host, backlog, function()
 {
     console.log("웹 서버가 시작되었습니다!!(port : %d)", port);
