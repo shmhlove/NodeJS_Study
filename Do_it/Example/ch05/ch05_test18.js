@@ -44,26 +44,30 @@ expressApp.use(expressSession(
 ));
 
 // 클라이언트에서 ajax로 요청했을 때 CORS(다중 서버 접속) 지원
+// 지금은 없어도 되는데??
+// ajax이 뭔지 다중 서버 접속??이 뭔지 정확한 개념을 모르겠다.
 expressApp.use(cors());
 
 // multer 미들웨어 사용 : 미들웨어 사용 순서 중요 body-parser -> multer -> router
-// 파일제한 : 10개 1GB
-var storage = multer.diskStorage(
-    {
-        destination: function(req, file, callback) 
-        {
-            callback(null, "./Example/ch05/uploads");
-        },
-        filename: function (req, file, callback)
-        {
-            callback(null, Date.now() + "_" + file.originalname);
-        }
-    }
-);
-
 var upload = multer(
     {
-        storage: storage,
+        // 저장소 설정
+        storage: multer.diskStorage(
+                    {
+                        // 업로드 된 파일이 저장될 목적지
+                        destination: function(req, file, callback) 
+                        {
+                            callback(null, "./Example/ch05/uploads");
+                        },
+                        // 저장될 파일 이름
+                        filename: function (req, file, callback)
+                        {
+                            callback(null, Date.now() + "_" + file.originalname);
+                        }
+                    }
+                ),
+        
+        // 제한 설정 : 한번에 업로드 가능한 파일 수(10개)와, 용량(1GB)
         limits: 
         {
             files: 10,
