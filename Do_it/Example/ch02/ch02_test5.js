@@ -6,6 +6,9 @@
     npm init
     npm uninstall nconf
     npm install nconf --save
+    
+    * package.json 파일에 디펜던시가 있다면
+      npm install 명령으로 디펜던시에 기록된 모든 모듈을 한번에 설치할 수 있다.
 */
 
 // npm 명령시 방화벽에 막혀 있는 경우
