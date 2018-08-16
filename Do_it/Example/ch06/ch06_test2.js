@@ -2,6 +2,9 @@
 /*
     조회 : Database.db("%DB Name%").collection("%Collection Name%").find();
     추가 : Database.db("%DB Name%").collection("%Collection Name%").insertMany();
+    
+    * 테스트
+        -> http://127.0.0.1:3000/public/login.html
 */
 
 var express = require("express");

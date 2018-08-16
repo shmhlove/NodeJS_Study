@@ -1,7 +1,7 @@
 // < 데이터베이스 : MongoDB 활용 >
 /*
-    - MongoDB 관리도구 : http://robomongo.org
-    - 몽구스
+    * MongoDB 관리도구 : http://robomongo.org
+    * 몽구스
         -> mongoDB는 NoSql 데이터베이스로 테이블의 속성을 마음껏 다르게 만들 수 있다.
         즉, 어떤 컬럼에는 X가 있지만 다음 컬럼에는 X가 없을 수 있다.
         이는 때로는 일괄처리할때 예외처리 요소가 늘어나게하고, 테이블 조회를 어렵게 만들 수 있다.
@@ -9,6 +9,9 @@
         그래서 정해진 구조체(스키마)를 만들고, 이를 오브젝터 맴퍼로 데이터베이스화 할 수 있도록 도움을 주는 몽구스를 이용할 수 있다.
         
         -> npm install mongoose --save
+        
+    * 테스트
+        -> http://127.0.0.1:3000/public/login.html
 */
 
 var express = require("express");
