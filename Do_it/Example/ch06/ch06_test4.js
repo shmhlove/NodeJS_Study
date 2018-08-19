@@ -1,15 +1,48 @@
 // < 데이터베이스 : MongoDB 활용 >
 /*
-    * MongoDB 관리도구 : http://robomongo.org
-    * 몽구스
-        -> mongoDB는 NoSql 데이터베이스로 테이블의 속성을 마음껏 다르게 만들 수 있다.
-        즉, 어떤 컬럼에는 X가 있지만 다음 컬럼에는 X가 없을 수 있다.
-        이는 때로는 일괄처리할때 예외처리 요소가 늘어나게하고, 테이블 조회를 어렵게 만들 수 있다.
+    * 인덱스와 메소드 활용하기
+        -> 스키마 타입(type)에 대해
+            String : 문자열 타입
+            Number : 숫자 타입
+            Boolean : 이진 타입
+            Array : 배열 타입
+            Buffer : 버퍼 타입(바이너리 데이터)
+            Date : 날짜 타입
+            ObjectId : 각 문서마다 만들어지는 ObjectId를 저장할 수 있는 타입
+            Mixed : 혼합 타입
+            
+        -> 검색속도 향상을 위해 인덱스를 사용한다.
+            required : 필수요소 지정
+            qunique : 중복을 허용하지 않는 유일한 값
+            index : ??
+            default : 기본값
+            
+        -> 예시
+        var UserSchema = new mongoose.Schema(
+        {
+            // unique: true 속성으로 인해 자동으로 인덱스 생성
+            id: { type: String, required: true, unique: true },
+            
+            password: { type: String, required: true },
+            
+            // index: "hashed"도 인덱스 생성
+            name: { type: String, index: "hashed" },
+            
+            age: Number,
+            
+            // index: {unique: false, expires: "1d"}로 인덱스 생성 및 유효기간까지 지정
+            created_at: { type: Date, index: {unique: false, expires: "1d"} },
+            
+            updated_at: Date
+        });
         
-        그래서 정해진 구조체(스키마)를 만들고, 이를 오브젝터 맴퍼로 데이터베이스화 할 수 있도록 도움을 주는 몽구스를 이용할 수 있다.
-        
-        -> npm install mongoose --save
-        
+        -> 위치 기반 서비스를 사용하면 경위도 좌표에 의한 공간 인덱싱도 있음.
+           { type: [Number], index: "2d", sparse: true }
+           
+        -> 스키마에 메소드를 추가할 수 있다.
+            static(name, fn) : 모델 객체에서 사용할 수 있는 함수를 등록한다.
+            method(name, fn) : 모델 인스턴스 객체에서 사용할 수 있는 함수를 등록한다.
+            
     * 테스트
         -> http://127.0.0.1:3000/public/login.html
 */
@@ -83,7 +116,8 @@ router.route("/process/login").post(function(req, res)
                 res.write("<h1>로그인 성공</h1>");
                 res.write("<div><p>사용자 아이디 : " + paramId + "</p></div>");
                 res.write("<div><p>사용자 이름 : " + userName + "</p></div>");
-                res.write("<br><br><a href=\"/public/login.html\">다시 로그인하기</a>");
+                res.write("<br><br><a href=\"/public/listuser.html\">사용자 리스트 보기</a>");
+                res.write("<br><a href=\"/public/login.html\">다시 로그인하기</a>");
                 res.end();
             }
             else
@@ -122,7 +156,7 @@ router.route("/process/adduser").post(function(req, res)
                 throw err;
             }
             
-            if (result && 0 < result.insertedCount)
+            if (result)
             {
                 res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
                 res.write("<h1>사용자 추가 성공</h1>");
@@ -135,6 +169,57 @@ router.route("/process/adduser").post(function(req, res)
             {
                 res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
                 res.write("<h1>사용자 추가 실패</h1>");
+                res.end();
+            }
+        });
+    }
+});
+router.route("/process/listuser").post(function(req, res)
+{
+    console.log("POST /process/listuser 호출됨");
+    
+    if (null == mongoDatabase)
+    {
+        res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+        res.write("<h2>데이터베이스 연결 실패</h2>");
+        res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
+        res.end();
+    }
+    else
+    {
+        UserModel.findAll(function(err, results)
+        {
+            if (err)
+            {
+                console.error("사용자 리스트 조회 중 오류 발생 : " + err.stack);
+                res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+                res.write("<h1>사용자 리스트 조회 중 오류 발생</h1>");
+                res.write("<p>" + err.stack + "</p>");
+                res.end();
+                return;
+            }
+            
+            if (results)
+            {
+                res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+                res.write("<h2>사용자 리스트</h2>");
+                
+                res.write("<div><ul>");
+                for (var i = 0; i < results.length; ++i)
+                {
+                    var curId = results[i]._doc.id;
+                    var curName = results[i]._doc.name;
+                    res.write("    <li>#" + i + " : " + curId + ", " + curName + "</li>");
+                }
+                res.write("</ul></div>");
+                res.write("<br><br><a href=\"/public/login.html\">로그인하기</a>");
+                res.write("<br><a href=\"/public/adduser.html\">가입하기</a>");
+                res.end();
+            }
+            else
+            {
+                res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+                res.write("<h1>사용자 리스트 조회 실패</h1>");
                 res.end();
             }
         });
@@ -172,17 +257,30 @@ var connectDB = function()
     {
         console.log("데이터베이스에 연결되었습니다. : " + databaseUrl);
         
-        // 스키마 정의
+        // 스키마 정의 ( 인덱스, 기본값 정의 포함 )
         UserSchema = mongoose.Schema(
         {
             id: { type: String, required: true, unique: true },
-            name: String,
-            password: { type: String, required: true }
+            password: { type: String, required: true },
+            name: { type: String, index: "hashed" },
+            age: { type: Number, "default": -1},
+            created_at: {type: Date, index: {unique:false}, "default": Date.now},
+            updated_at: {type: Date, index: {unique:false}, "default": Date.now}
+        });
+        
+        // 스키마 static 메소드 정의
+        UserSchema.static("findById", function(id, callback)
+        {
+            return this.find({id : id}, callback);
+        });
+        UserSchema.static("findAll", function(callback)
+        {
+            return this.find({}, callback);
         });
         console.log("Scheme 정의함.");
         
         // 스키마로 모델 생성
-        UserModel = mongoose.model("users", UserSchema);
+        UserModel = mongoose.model("users2", UserSchema);
         console.log("UserModel 정의함.");
     });
     
@@ -198,7 +296,7 @@ var authUser = function(database, id, password, callback)
 {
     console.log("authUser 호출됨");
     
-    UserModel.find({"id" : id, "password" : password}, function(err, results)
+    UserModel.findById(id, function(err, results)
     {
         if (err)
         {
@@ -207,15 +305,19 @@ var authUser = function(database, id, password, callback)
         }
         
         if (0 < results.length)
-        {
-            console.log("아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾음.", id, password);
-            callback(null, results);
+        {   
+            // 비밀번호 일치 확인
+            if (password == results[0]._doc.password)
+            {
+                console.log("아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾음.", id, password);
+                callback(null, results);
+                return;
+            }
         }
-        else
-        {
-            console.log("아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾지 못함.", id, password);
-            callback(null, null);
-        }
+
+        console.log("아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾지 못함.", id, password);
+        
+        callback(null, null);
     });
 };
 
