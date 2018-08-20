@@ -4,6 +4,7 @@
     추가 : Database.db("%DB Name%").collection("%Collection Name%").insertMany();
     
     * 테스트
+        -> sudo mongod --dbpath /data/db
         -> http://127.0.0.1:3000/public/login.html
 */
 

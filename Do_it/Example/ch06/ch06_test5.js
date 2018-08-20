@@ -1,48 +1,15 @@
 // < 데이터베이스 : MongoDB 활용 >
 /*
-    * 인덱스와 메소드 활용하기
-        -> 스키마 타입(type)에 대해
-            String : 문자열 타입
-            Number : 숫자 타입
-            Boolean : 이진 타입
-            Array : 배열 타입
-            Buffer : 버퍼 타입(바이너리 데이터)
-            Date : 날짜 타입
-            ObjectId : 각 문서마다 만들어지는 ObjectId를 저장할 수 있는 타입
-            Mixed : 혼합 타입
-            
-        -> 검색속도 향상을 위해 인덱스를 사용한다.
-            required : 필수요소 지정
-            qunique : 중복을 허용하지 않는 유일한 값
-            index : ??
-            default : 기본값
-            
-        -> 예시
-        var UserSchema = new mongoose.Schema(
-        {
-            // unique: true 속성으로 인해 자동으로 인덱스 생성
-            id: { type: String, required: true, unique: true },
-            
-            password: { type: String, required: true },
-            
-            // index: "hashed"도 인덱스 생성
-            name: { type: String, index: "hashed" },
-            
-            age: Number,
-            
-            // index: {unique: false, expires: "1d"}로 인덱스 생성 및 유효기간까지 지정
-            created_at: { type: Date, index: {unique: false, expires: "1d"} },
-            
-            updated_at: Date
-        });
+    * 몽구스의 virtual 메소드 활용하기
+        -> MongoDB 컬렉션에 저장되지 않는 가상의 속성을 추가함
+        -> 활용법은 
+            - 실제 DB에 저장되는 필드명을 다르게 하고 싶을때나
+            - 여러 필드를 한번에 받고, virtual메소드에서 스플릿해서 속성값을 처리할때
         
-        -> 위치 기반 서비스를 사용하면 경위도 좌표에 의한 공간 인덱싱도 있음.
-           { type: [Number], index: "2d", sparse: true }
-           
-        -> 스키마에 메소드를 추가할 수 있다.
-            static(name, fn) : 모델 객체에서 사용할 수 있는 함수를 등록한다.
-            method(name, fn) : 모델 인스턴스 객체에서 사용할 수 있는 함수를 등록한다.
-            
+    * 비밀번호를 암호화 해서 저장
+        -> npm install crypto --save
+        -> 내장 모듈로 변경됨
+        
     * 테스트
         -> sudo mongod --dbpath /data/db
         -> http://127.0.0.1:3000/public/login.html
@@ -57,6 +24,7 @@ var cookieParser = require("cookie-parser");
 var expressSession = require("express-session");
 var mongoClient = require("mongodb").MongoClient;
 var mongoose = require("mongoose");
+var crypto = require("crypto");
 
 var path = require("path");
 var http = require("http");
@@ -252,47 +220,150 @@ var connectDB = function()
     mongoose.connect(databaseUrl, { useNewUrlParser: true });
     mongoDatabase = mongoose.connection;
     
-    mongoDatabase.on("error", console.error.bind(console, "mongoose connection error."));
+    mongoDatabase.on("error", console.error.bind(console, "Mongoose connection error."));
     
     mongoDatabase.on("open", function()
     {
-        console.log("데이터베이스에 연결되었습니다. : " + databaseUrl);
-        
-        // 스키마 정의 ( 인덱스, 기본값 정의 포함 )
-        UserSchema = mongoose.Schema(
-        {
-            id: { type: String, required: true, unique: true },
-            password: { type: String, required: true },
-            name: { type: String, index: "hashed" },
-            age: { type: Number, "default": -1},
-            created_at: {type: Date, index: {unique:false}, "default": Date.now},
-            updated_at: {type: Date, index: {unique:false}, "default": Date.now}
-        });
-        
-        // 스키마 static 메소드 정의
-        UserSchema.static("findById", function(id, callback)
-        {
-            return this.find({id : id}, callback);
-        });
-        UserSchema.static("findAll", function(callback)
-        {
-            return this.find({}, callback);
-        });
-        console.log("Scheme 정의함.");
-        
-        // 스키마로 모델 생성
-        UserModel = mongoose.model("users2", UserSchema);
-        console.log("UserModel 정의함.");
+        console.log("데이터 베이스에 연결되었습니다." + databaseUrl);
+        createUserSchema();
+        doTest();
+        //mongoDatabase.close();
     });
     
     mongoDatabase.on("disconnected", function()
     {
-        console.log("연결이 끊어졌습니다.  5초 후 다시 연결합니다.");
-        setInterval(connectDB, 5000);
+        console.log("연결이 끊어졌습니다.");
+        // setInterval(connectDB, 5000);
     });
 };
 
-// Mongoose를 이용해 사용자를 인증하는 함수
+// 스키마 정의 함수
+var createUserSchema = function()
+{
+    // 스키마 정의
+    UserSchema = mongoose.Schema(
+    {
+        id: {type:String, required:true, unique:true},
+        
+        // 암호화된 암호를 저장
+        hashed_password: {type:String, required:true, "default":""},
+        
+        // 암호화에 필요한 Key값 저장
+        salt: {type:String, required:true},
+        
+        name: {type:String, index:"hashed", "default":""},
+        
+        age: {type:Number, "default":-1},
+        
+        created_at: {type:Date, index:{unique:false, "default":Date.now}},
+        
+        updated_at: {type:Date, index:{unique:false, "default":Date.now}},
+    });
+    
+    // 스키마 static 메소드 추가
+    UserSchema.static("findById", function(id, callback)
+    {
+        return this.find({id : id}, callback);
+    });
+    UserSchema.static("findAll", function(callback)
+    {
+        return this.find({}, callback);
+    });
+    
+    // 스키마 virtual 메소드 추가
+    UserSchema.virtual("password").set(function(password)
+    {
+        this._password = password;
+        this.salt = this.makeSalt();
+        this.hashed_password = this.encryptPassword(password);
+        console.log("virtual password 호출됨 : " + this.hashed_password);
+    })
+    .get(function() { return this._password });
+    
+    UserSchema.virtual("info").set(function(info)
+    {
+        var splitted = info.split(" ");
+        this.id = splitted[0];
+        this.name = splitted[1];
+        console.log("virtual info 설정함 : %s, %s", this.id, this.name);
+    })
+    .get(function()
+    {
+        console.log("컬렉션 get 호출됨");
+        return this.id + " " + this.name;
+    });
+    
+    // 스키마 모델 인스턴스 메소드 추가
+    UserSchema.method("makeSalt", function()
+    {
+        return Math.round((new Date().valueOf() * Math.random())) + "";
+    });
+    UserSchema.method("encryptPassword", function(plainText, inSalt)
+    {
+        if (inSalt)
+        {
+            var hmac = crypto.createHmac("sha1", inSalt);
+            return hmac.update(plainText).digest("hex");
+            //return crypto.createHmac("sha1", inSalt).update(plainText).digest("hex");
+        }
+        else
+        {
+            var hmac = crypto.createHmac("sha1", this.salt);
+            return hmac.update(plainText).digest("hex");
+            //return crypto.createHmac("sha1", this.salt).update(plainText).digets("hex");
+        }
+    });
+    UserSchema.method("authenticate", function(plainText, inSalt, hashed_password)
+    {
+        console.log("authenticate 호출됨 : %s -> %s : %s", plainText, this.encryptPassword(plainText, inSalt), hashed_password)
+        
+        return this.encryptPassword(plainText, inSalt) == hashed_password;
+    });
+    
+    // 스키마 path 메소드로 속성의 유효성 검사
+    UserSchema.path("id").validate(function(id)
+    {
+        return id.length;
+    });
+    UserSchema.path("name").validate(function(name)
+    {
+        return name.length;
+    });
+    console.log("UserSchema 정의함");
+    
+    // 스키마로 모델 생성
+    var users = mongoDatabase.collection("users4");
+    if (users)
+    {
+        users.drop();
+        console.log("기존 컬렉션 제거함");
+    }
+    
+    UserModel = mongoose.model("users4", UserSchema);
+    console.log("UserModel 정의함."); 
+};
+
+// 사용자를 등록하는 함수
+var addUser = function(database, id, password, name, callback)
+{
+    console.log("addUser 호출됨");
+    
+    var user = new UserModel({"id": id, "password": password, "name": name});
+    
+    user.save(function(err)
+    {
+        if (err)
+        {
+            callback(err, null);
+            return;
+        }
+        
+        console.log("사용자 데이터 추가함.");
+        callback(null, user);
+    });
+};
+
+// 사용자를 인증하는 함수 : 아이디로 먼저 찾고, 비밀번호를 비교
 var authUser = function(database, id, password, callback)
 {
     console.log("authUser 호출됨");
@@ -306,39 +377,67 @@ var authUser = function(database, id, password, callback)
         }
         
         if (0 < results.length)
-        {   
-            // 비밀번호 일치 확인
-            if (password == results[0]._doc.password)
+        {
+            console.log("아이디와 일치하는 사용자 찾음");
+            
+            var user = new UserModel({id: id});
+            var authenticated = user.authenticate(password, results[0]._doc.salt, results[0]._doc.hashed_password);
+            
+            if (authenticated)
             {
-                console.log("아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾음.", id, password);
+                console.log("비밀번호 일치함");
                 callback(null, results);
                 return;
             }
         }
-
+        
         console.log("아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾지 못함.", id, password);
         
         callback(null, null);
     });
 };
 
-// Mongoose를 이용하여 사용자를 추가하는 함수
-var addUser = function(database, id, password, name, callback)
+// MongoDB 조회함수
+var findAll = function()
 {
-    console.log("addUser 호출됨 : " + id + ", " + password + ", " + name);
+    console.log("findAll 호출됨");
     
-    var user = new UserModel({"id":id, "password":password, "name":name});
+    UserModel.findAll(function(err, results)
+    {
+        if (err)
+        {
+            throw err;
+        }
+        
+        if (results)
+        {
+            console.log("조회된 user 문서 객체 #0 -> id : %s, name : %s", results[0]._doc.id, results[0]._doc.name);
+        }
+    });
+};
+
+// 테스트 실행 함수
+var doTest = function()
+{
+    console.log("doTest 호출됨");
+    
+    // UserModel인스턴스를 생성하여 계정을 추가하는데
+    // id와 name을 명시적으로 지정해주지 않고,
+    // 오직 info 필드를 넣으면 virtual 메소드(info)가 호출되어
+    // virtual 메소드의 구현대로 id와 name에 값을 넣어주게 된다.
+    
+    //var user = new UserModel({"info" : "test01 소녀시대 12345"});
+    var user = new UserModel({"id": "test01", "password": "12345", "name": "소녀시대"});
+    
     user.save(function(err)
     {
         if (err)
         {
-            callback(err, null);
-            return;
+            throw err;
         }
         
-        console.log("사용자 레코드 추가됨");
-        
-        callback(null, user);
+        console.log("사용자 데이터 추가함.");
+        findAll();
     });
 };
 
