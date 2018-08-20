@@ -31,6 +31,7 @@ var http = require("http");
 
 var expressApp = express();
 
+// 포트설정
 expressApp.set("port", process.env.PORT || 3000);
 
 // body파서 등록(POST방식에서 body를 쉽게 읽을 수 있도록)
@@ -273,7 +274,6 @@ var createUserSchema = function()
     // 스키마 virtual 메소드 추가
     UserSchema.virtual("password").set(function(password)
     {
-        this._password = password;
         this.salt = this.makeSalt();
         this.hashed_password = this.encryptPassword(password);
         console.log("virtual password 호출됨 : " + this.hashed_password);
@@ -302,15 +302,11 @@ var createUserSchema = function()
     {
         if (inSalt)
         {
-            var hmac = crypto.createHmac("sha1", inSalt);
-            return hmac.update(plainText).digest("hex");
-            //return crypto.createHmac("sha1", inSalt).update(plainText).digest("hex");
+            return crypto.createHmac("sha1", inSalt).update(plainText).digest("hex");
         }
         else
         {
-            var hmac = crypto.createHmac("sha1", this.salt);
-            return hmac.update(plainText).digest("hex");
-            //return crypto.createHmac("sha1", this.salt).update(plainText).digets("hex");
+            return crypto.createHmac("sha1", this.salt).update(plainText).digest("hex");
         }
     });
     UserSchema.method("authenticate", function(plainText, inSalt, hashed_password)
