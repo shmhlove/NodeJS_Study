@@ -50,15 +50,29 @@ router.route("/process/memo").post(function(req, res)
     
     WriteMemo(req.body.user, req.body.date, req.body.memo, function(err, memo)
     {
-        
         res.writeHead(200, {"Content-Type": "text/html;charset=utf8"});
-        res.write("<p>나의 메모</p>");
-        res.write("<hr/>");
-        res.write("<p>메모가 저장되었습니다.</p>");
-        res.write("<p>작성자 : " + memo.name + "</p>");
-        res.write("<p>작성일 : " + memo.date + "</p>");
-        res.write("<p>메모 : " + memo.memo + "</p>");
-        res.write("<a href=\"/public/memo.html\">다시 작성</a>");
+        
+        if (err)
+        {
+            res.write("<p>데이터 베이스에 메모 저장 실패</p>");
+            res.write("<hr/>");
+            res.write("<p>메모가 저장되지 않았습니다.</p>");
+            res.write("<p>작성자 : " + memo.name + "</p>");
+            res.write("<p>작성일 : " + memo.date + "</p>");
+            res.write("<p>메모 : " + memo.memo + "</p>");
+            res.write("<a href=\"/public/memo.html\">다시 작성</a>");
+        }
+        else
+        {
+            res.write("<p>나의 메모</p>");
+            res.write("<hr/>");
+            res.write("<p>메모가 저장되었습니다.</p>");
+            res.write("<p>작성자 : " + memo.name + "</p>");
+            res.write("<p>작성일 : " + memo.date + "</p>");
+            res.write("<p>메모 : " + memo.memo + "</p>");
+            res.write("<a href=\"/public/memo.html\">다시 작성</a>");
+        }
+
         res.end();    
     });
 });
