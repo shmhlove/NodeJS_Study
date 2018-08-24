@@ -6,6 +6,6 @@
         -> 그냥 실행
 */
 
-var User = require("./ch07_test7_module_user");
+var userModule = require("./ch07_test7_module_user");
 
-User.printUser();
+userModule.printUser();

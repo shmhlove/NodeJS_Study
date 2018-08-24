@@ -1,6 +1,6 @@
 // < 모듈화 : 기본 >
 /*
-    * module.exports 활용
+    * module.exports 활용 1
     
     * 테스트
         -> 그냥 실행
