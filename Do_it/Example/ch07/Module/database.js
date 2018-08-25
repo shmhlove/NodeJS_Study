@@ -5,6 +5,9 @@
 var mongoose = require("mongoose");
 
 // Mongoose로 DB 등록
+
+var App;
+var Config;
 var database = {};
 
 database.init = function(app, config)
@@ -18,6 +21,9 @@ var connect = function(app, config)
 {
     console.log("데이터베이스 연결을 시도합니다.");
     
+    App = app;
+    Config = config;
+    
     mongoose.Promise = global.Promise;
     mongoose.connect(config.db_url, { useNewUrlParser: true });
     database.db = mongoose.connection;
@@ -27,15 +33,24 @@ var connect = function(app, config)
     database.db.on("open", function()
     {
         console.log("데이터 베이스에 연결되었습니다." + config.db_url);
+        
         createSchema(app, config);
     });
     
     database.db.on("disconnected", function()
     {
         console.log("연결이 끊어졌습니다.");
-        setInterval(connectDB, 5000);
+        
+        // 정상 재시도 안됨.
+        //setInterval(retryConnection, 5000);
     });
 };
+
+var retryConnection = function()
+{
+    console.log("재 접속을 시도합니다.");
+    connect(App, Config);
+}
 
 // 스키마 정의 함수
 var createSchema = function(app, config)
@@ -55,6 +70,8 @@ var createSchema = function(app, config)
             console.log("%s 기존 컬렉션 제거함", curConfig.collection);
         }
         
+        // 제 접속시 에러발생함...
+        console.log("%s 모델 정의시도", curConfig.modelName);
         var curModel = mongoose.model(curConfig.collection, curSchema);
         console.log("%s 모델 정의함", curConfig.modelName);
         

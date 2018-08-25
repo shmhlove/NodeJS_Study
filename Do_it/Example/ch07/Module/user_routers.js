@@ -2,6 +2,8 @@
     라우터 정의 모듈
 */
 
+var fs = require("fs");
+
 var login = function(req, res)
 {
     console.log("POST /process/login 호출됨");
@@ -14,10 +16,22 @@ var login = function(req, res)
     
     if (null == database.db)
     {
-        res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
-        res.write("<h2>데이터베이스 연결 실패</h2>");
-        res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
-        res.end();
+        var filePath = "./Example/ch07/public/error_database.html";
+        fs.exists(filePath, function(exists)
+        {
+            if (false == exists)
+            {        
+                res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+                res.write("<h2>데이터베이스 연결 실패</h2>");
+                res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
+                res.end();
+            }
+            else
+            {
+                var inStream = fs.createReadStream("./Example/ch07/public/error_database.html");
+                inStream.pipe(res);   
+            }
+        });
     }
     else
     {
@@ -65,10 +79,20 @@ var adduser = function(req, res)
     
     if (null == database.db)
     {
-        res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
-        res.write("<h2>데이터베이스 연결 실패</h2>");
-        res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
-        res.end();
+        var filePath = "./Example/ch07/public/error_database.html";
+        fs.exists(filePath, function(exists)
+        {
+            if (false == exists)
+            {        
+                res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+                res.write("<h2>데이터베이스 연결 실패</h2>");
+                res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
+                res.end();
+            }
+            
+            var inStream = fs.createReadStream("./Example/ch07/public/error_database.html");
+            inStream.pipe(res);
+        });
     }
     else
     {
@@ -107,10 +131,20 @@ var listuser = function(req, res)
     
     if (null == database.db)
     {
-        res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
-        res.write("<h2>데이터베이스 연결 실패</h2>");
-        res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
-        res.end();
+        var filePath = "./Example/ch07/public/error_database.html";
+        fs.exists(filePath, function(exists)
+        {
+            if (false == exists)
+            {        
+                res.writeHead(200, {"Content-Type":"text/html;charset=utf8"});
+                res.write("<h2>데이터베이스 연결 실패</h2>");
+                res.write("<div><p>데이터베이스에 연결하지 못했습니다.</p></div>");
+                res.end();
+            }
+            
+            var inStream = fs.createReadStream("./Example/ch07/public/error_database.html");
+            inStream.pipe(res);
+        });
     }
     else
     {
