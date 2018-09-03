@@ -39,9 +39,9 @@ var passportLocalStrategy = require('passport-local').Strategy;
 // req.flash("key", "message"); or req.flash("key")
 var flash = require("connect-flash");
 
-var routerModule = require("./Module/router_loader");
-var configModule = require("./Module/config");
-var databaseModule = require("./Module/database");
+var routerModule = require("./Module_test1/router_loader");
+var configModule = require("./Module_test1/config");
+var databaseModule = require("./Module_test1/database");
 
 var expressApp = express();
 
