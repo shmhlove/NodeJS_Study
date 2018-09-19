@@ -90,6 +90,6 @@ module.exports = function(router, passport)
         console.log('/logout 패스 요청됨.');
 
         req.logout();
-        res.redirect('/');
+        res.redirect('/index');
     });
 };
