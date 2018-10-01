@@ -2,6 +2,10 @@
 /*
     * 소켓 모듈 설치
         -> npm install socket.io --save
+        
+    * CORS 모듈 설치
+        -> 클라이언트에서 Ajax을 사용해 데이터를 가져올 수 있고, 현재 브라우저의 웹 서버 외 다른 웹 서버에도 접속할 수 있도록 하는 모듈
+        -> npm install cors --save
 */
 
 var express = require("express");
