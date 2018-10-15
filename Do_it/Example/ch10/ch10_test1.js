@@ -6,6 +6,11 @@
     * CORS 모듈 설치
         -> 클라이언트에서 Ajax을 사용해 데이터를 가져올 수 있고, 현재 브라우저의 웹 서버 외 다른 웹 서버에도 접속할 수 있도록 하는 모듈
         -> npm install cors --save
+        
+    * 테스트
+        -> sudo mongod --dbpath /data/shopping
+        -> http://127.0.0.1:3000/public/chat01.html
+        -> https://127.0.0.1:3000/public/chat01.html
 */
 
 var express = require("express");
@@ -17,6 +22,7 @@ var cookieParser = require("cookie-parser");
 var expressSession = require("express-session");
 
 var path = require("path");
+var http = require("http");
 var https = require("https");
 
 // Passport를 활용한 인증
@@ -24,6 +30,10 @@ var passport = require("passport");
 // 간단한 상태정보를 웹 문서에 보내주거나 쉽게 확인할 수 있음
 // req.flash("key", "message"); or req.flash("key")
 var flash = require("connect-flash");
+
+// socket.io 불러들이기
+var socketio = require("socket.io");
+var cors = require("cors");
 
 var configModule = require("./Module_test3/config");
 var databaseModule = require("./Module_test3/database");
@@ -75,6 +85,9 @@ routerPassportModule(expressApp, passport);
 var passportModule = require("./Module_test3/passport");
 passportModule(expressApp, passport);
 
+// 웹 소켓 설정 : cors를 미들웨어로 사용하도록 등록
+expressApp.use(cors());
+
 // 에러 핸들러 등록
 var errorHandler = expressErrorHandler(
 {
@@ -119,9 +132,21 @@ var options =
     cert: fs.readFileSync("./Example/ch09/Certificate/cert.pem")
 };
 
-var server = https.createServer(options, expressApp).listen(expressApp.get("port"), function()
+var server = http.createServer(expressApp).listen(expressApp.get("port"), function()
+//var server = https.createServer(options, expressApp).listen(expressApp.get("port"), function()
 {
     console.log("서버가 시작되었습니다. 포트 : " + expressApp.get("port"));
     
     databaseModule.init(expressApp, configModule);
+});
+
+var io = socketio.listen(server);
+console.log("socket.io 요청을 받아들일 준비가 되었습니다.");
+
+// 소켓 이벤트 등록
+io.sockets.on("connection", function(socket)
+{
+    console.log("connection info : ", socket.request.connection._peername);
+    socket.remoteAddress = socket.request.connection._peername.address;
+    socket.remotePort = socket.request.connection._peername.port;
 });
