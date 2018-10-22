@@ -1,16 +1,9 @@
-// < 채팅 서버 만들기 : 1 대 N 통신 (socket.io 활용) >
+// < 채팅 서버 만들기 : 1 대 1 통신 >
 /*
-    * 소켓 모듈 설치
-        -> npm install socket.io --save
-        
-    * CORS 모듈 설치
-        -> 클라이언트에서 Ajax을 사용해 데이터를 가져올 수 있고, 현재 브라우저의 웹 서버 외 다른 웹 서버에도 접속할 수 있도록 하는 모듈
-        -> npm install cors --save
-        
     * 테스트
         -> sudo mongod --dbpath /data/shopping
-        -> http://127.0.0.1:3000/public/chat01.html
-        -> http://127.0.0.1:3000/public/chat02.html
+        -> http://127.0.0.1:3000/public/chat03.html
+        -> http://127.0.0.1:3000/public/chat03_pretty.html
 */
 
 var express = require("express");
@@ -144,6 +137,7 @@ var io = socketio.listen(server);
 console.log("socket.io 요청을 받아들일 준비가 되었습니다.");
 
 // 소켓 이벤트 등록
+var login_ids = {};
 io.sockets.on("connection", function(socket)
 {
     console.log("connection info : ", socket.request.connection._peername);
@@ -160,5 +154,66 @@ io.sockets.on("connection", function(socket)
             console.dir("나를 포함한 모든 클라이언트에게 message 이벤트를 전송합니다.");
             io.sockets.emit('message', message);
         }
+        else
+        {
+            if (login_ids[message.recepient])
+            {
+                io.sockets.connected[login_ids[message.recepient]].emit('message', message);
+                
+                // 응답 메시지 전송
+                sendResponse(socket, 'message', '200', '메시지를 전송했습니다.');
+            }
+            else
+            {
+                // 응답 메시지 전송
+                sendResponse(socket, 'login', '404', '상대방의 로그인 ID를 찾을 수 없습니다.');
+            }
+        }
+    });
+    
+    socket.on("login", function(loginInfo)
+    {
+        console.log("login 이벤트를 받았습니다.");
+        console.dir(loginInfo);
+        
+        console.log("접속한 소켓의 ID : " + socket.id);
+        if (login_ids[loginInfo.id])
+        {
+            sendResponse(socket, 'login', '404', '이미 로그인되었습니다.');
+            return;
+        }
+        
+        login_ids[loginInfo.id] = socket.id;
+        socket.login_id = loginInfo.id;
+        
+        console.log("접속한 클라이언트 ID 개수 : %d", Object.keys(login_ids).length);
+        
+        // 응답 메시지 전송
+        sendResponse(socket, 'login', '200', '로그인되었습니다.');
+    });
+    
+    socket.on("logout", function(logoutInfo)
+    {
+        console.log("logout 이벤트를 받았습니다.");
+        console.dir(logoutInfo);
+        
+        if (login_ids[logoutInfo.id])
+        {
+            // 로그인 정보 제거
+            delete login_ids[logoutInfo.id];
+            
+            // 응답 메시지 전송
+            sendResponse(socket, 'logout', '200', '로그아웃 되었습니다.');
+        }
+        else
+        {
+            // 응답 메시지 전송
+            sendResponse(socket, 'logout', '404', '로그인 되어 있지 않습니다.');
+        }
     });
 });
+
+function sendResponse(socket, command, code, message) {
+    var statusObj = {command : command, code : code, message : message};
+    socket.emit('response', statusObj);
+}
