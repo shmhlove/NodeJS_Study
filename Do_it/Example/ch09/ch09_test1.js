@@ -276,7 +276,7 @@ var errorHandler = expressErrorHandler(
 {
     static:
     {
-        "404": "./Example/ch06/public/404.html"
+        "404": "./Example/ch09/public/404.html"
     }
 });
 expressApp.use(expressErrorHandler.httpError(404));
