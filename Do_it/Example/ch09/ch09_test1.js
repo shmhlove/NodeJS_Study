@@ -51,7 +51,7 @@ expressApp.set("view engine", "ejs");
 console.log("뷰 엔진이 ejs로 설정되었습니다.");
 
 // 포트설정
-expressApp.set("port", process.env.PORT || configModule.server_port);
+expressApp.set("port", configModule.server_port);
 
 // body파서 등록(POST방식에서 body를 쉽게 읽을 수 있도록)
 expressApp.use(expressBodyParser.urlencoded({extended: false}));
