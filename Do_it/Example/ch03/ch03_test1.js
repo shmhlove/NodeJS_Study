@@ -1,4 +1,10 @@
 // < 데이터 타입 : 기본 >
+/*
+    * bool
+    * number
+    * string
+    * object
+*/
 
 console.log("==============================");
 
@@ -22,6 +28,7 @@ object.number = 20;
 object["string"] = "String";
 object["name"] = "SangHo";
 console.dir(object);
+console.log(JSON.stringify(object));
 console.log("bool : %s, number : %d, string : %s, string : %s", 
             object.bool, object.number, object.string, object.name);
 

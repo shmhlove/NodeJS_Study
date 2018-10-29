@@ -8,10 +8,10 @@ console.log("==============================");
 function Class(name, age)
 {
     // this가 인스턴스화 되었는지 체크하는건데 이런 문법은 뭐지??
-    if (false == (this instanceof Class))
-    {
-        return new Class(name, age);    
-    }
+//    if (false == (this instanceof Class))
+//    {
+//        return new Class(name, age);    
+//    }
     
     this.name = name;
     this.age = age;
@@ -20,6 +20,8 @@ function Class(name, age)
     {
         console.log("Name is %s And Age is %d", this.name, this.age);
     };
+    
+    return this;
 }
 
 // 클래스 선언 외부에서 값 혹은 기능을 추가할 수 있다.
@@ -27,15 +29,20 @@ Class.prototype.X = 10;
 Class.prototype.Y = 20;
 Class.prototype.printXY = function()
 {
-    console.log("X : %d, Y : %d", this.X, this.Y);
+    console.log("can only instance (X : %d, Y : %d)", this.X, this.Y);
 };
 
 var SangHo = Class("SangHo", 37);
 var Natalie = new Class("Natalie", 22);
 
 SangHo.printInfo();
-SangHo.printXY();
+if (SangHo instanceof Class)
+    SangHo.printXY();
+
+console.log("==============================");
+
 Natalie.printInfo();
-Natalie.printXY();
+if (Natalie instanceof Class)
+    Natalie.printXY();
 
 console.log("==============================");

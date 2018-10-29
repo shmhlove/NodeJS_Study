@@ -18,10 +18,11 @@ function loopping(looppingCount, callback)
 }
 
 console.log("---> start");
-var history = loopping(10000, function()
+var history = loopping(1000000, function()
 {
    console.log("callback"); 
 });
+history();
 console.log("---> end");
 
 console.log("==============================");

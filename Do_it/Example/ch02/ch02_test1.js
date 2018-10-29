@@ -1,4 +1,7 @@
 // < console : timer >
+/*
+    * console.time() ~ console.timeEnd()로 경과시간 체크
+*/
 
 var result = 0;
 

@@ -1,4 +1,7 @@
-// < process >
+// < 전역객체 : process >
+/*
+    * argv, env, exit 활용 예
+*/
 
 for (var i=0; i<process.argv.length; ++i)
 {
