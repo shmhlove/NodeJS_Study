@@ -15,21 +15,22 @@ database.init = function(app, config)
     connect(app, config);
 };
 
+var configInfo = require("./config");
 var connect = function(app, config)
 {
     console.log("데이터베이스 연결을 시도합니다.");
-    config.db_url = "mongodb://localhost:27017/shopping";
+    
     mongoose.Promise = global.Promise;
-    mongoose.connect(config.db_url, { useNewUrlParser: true });
+    mongoose.connect(configInfo.db_url, { useNewUrlParser: true });
     database.db = mongoose.connection;
     
     database.db.on("error", console.error.bind(console, "Mongoose connection error."));
     
     database.db.on("open", function()
     {
-        console.log("데이터 베이스에 연결되었습니다." + config.db_url);
+        console.log("데이터 베이스에 연결되었습니다." + configInfo.db_url);
         
-        createSchema(app, config);
+        createSchema(app, configInfo);
     });
     
     database.db.on("disconnected", connect);
