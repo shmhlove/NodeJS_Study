@@ -271,16 +271,16 @@ passport.deserializeUser(function(user, done)
     done(null, user);
 });
 
-// 에러 핸들러 등록
-var errorHandler = expressErrorHandler(
-{
-    static:
-    {
-        "404": "./Example/ch09/public/404.html"
-    }
-});
-expressApp.use(expressErrorHandler.httpError(404));
-expressApp.use(errorHandler);
+//// 에러 핸들러 등록
+//var errorHandler = expressErrorHandler(
+//{
+//    static:
+//    {
+//        "404": "./Example/ch09/public/404.html"
+//    }
+//});
+//expressApp.use(expressErrorHandler.httpError(404));
+//expressApp.use(errorHandler);
 
 //확인되지 않은 예외 처리 - 서버 프로세스 종료하지 않고 유지함
 process.on('uncaughtException', function (err)
