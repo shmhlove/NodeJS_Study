@@ -18,7 +18,7 @@ database.init = function(app, config)
 var connect = function(app, config)
 {
     console.log("데이터베이스 연결을 시도합니다.");
-    
+    config.db_url = "mongodb://localhost:27017/shopping";
     mongoose.Promise = global.Promise;
     mongoose.connect(config.db_url, { useNewUrlParser: true });
     database.db = mongoose.connection;
